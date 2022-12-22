@@ -1,46 +1,39 @@
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import java.util.Scanner;
 
 public class Practicum {
     public static void main(String[] args) {
-        HttpClient client = HttpClient.newHttpClient();
 
-        URI url = URI.create("https://api.exchangerate.host/latest?base=RUB&symbols=USD,EUR");
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(url)
-                .GET()
-                .build();
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Введите размер остатка на вашем счёте:");
+        double balance = scanner.nextDouble();
 
-        try {
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            // проверяем, успешно ли обработан запрос
-            if (response.statusCode() == 200) {
-                JsonElement jsonElement = JsonParser.parseString(response.body());
-                if(!jsonElement.isJsonObject()) { // проверяем, точно ли мы получили JSON-объект
-                    System.out.println("Ответ от сервера не соответствует ожидаемому.");
-                    return;
-                }
-                // получите курс доллара и евро и запишите в переменные rateUSD и rateEUR
-                JsonObject jsonObject =
 
-                double rateUSD = jsonObject.get("USD").getAsDouble();
-                double rateEUR = jsonObject.get("EUR").getAsDouble();
+        FinanceApplication fin = new FinanceApplication(balance, scanner);
 
-                System.out.println("Стоимость рубля в долларах: " + rateUSD + " USD");
-                System.out.println("Стоимость рубля в евро: " + rateEUR + " EUR");
+        while (true) {
+            printMenu();
+
+            int command = scanner.nextInt();
+            if (command == 0) {
+                System.out.println("Выход.");
+                break;
+            } else if (command == 1) {
+                fin.convert();
+            } else if (command == 2) {
+                fin.saveExpense();
+            } else if (command == 3) {
+                fin.printAllExpenses();
             } else {
-                System.out.println("Что-то пошло не так. Сервер вернул код состояния: " + response.statusCode());
+                System.out.println("Извините, такой команды пока нет.");
             }
-        } catch (IOException | InterruptedException e) { // обрабатываем ошибки отправки запроса
-            System.out.println("Во время выполнения запроса возникла ошибка.\n" +
-                    "Проверьте, пожалуйста, адрес и повторите попытку.");
         }
+    }
+
+    public static void printMenu() {
+        System.out.println("Что вы хотите сделать? ");
+        System.out.println("1 - Конвертировать валюту.");
+        System.out.println("2 - Внести трату.");
+        System.out.println("3 - Показать траты за неделю.");
+        System.out.println("0 - Выход.");
     }
 }
